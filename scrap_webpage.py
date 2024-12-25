@@ -1,69 +1,104 @@
-import requests
+import os
+import aiohttp
+import asyncio
 from bs4 import BeautifulSoup
 import json
+from pathlib import Path
 
-from sympy import im
+# Function to scrape the webpage asynchronously
+async def scrape_page(session, url):
+    try:
+        async with session.get(url) as response:
+            if response.status != 200:
+                print(f"Failed to fetch the page {url}: {response.status}")
+                return None
 
-# Function to scrape the webpage
-def scrape_page(url):
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise Exception(f"Failed to fetch the page: {response.status_code}")
+            html = await response.text()
+            soup = BeautifulSoup(html, 'html.parser')
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+            # Extract metadata
+            title = soup.find('title').text if soup.find('title') else ""
+            description = soup.find('meta', {'name': 'description'})
+            description = description['content'] if description else ""
+            language = soup.find('html')['lang'] if soup.find('html') and 'lang' in soup.find('html').attrs else ""
+            keywords = soup.find('meta', {'name': 'keywords'})
+            keywords = keywords['content'] if keywords else ""
 
-    # Extract metadata
-    title = soup.find('title').text if soup.find('title') else ""
-    description = soup.find('meta', {'name': 'description'})
-    description = description['content'] if description else ""
-    language = soup.find('html')['lang'] if soup.find('html') and 'lang' in soup.find('html').attrs else ""
-    keywords = soup.find('meta', {'name': 'keywords'})
-    keywords = keywords['content'] if keywords else ""
+            metadata = {
+                "title": title,
+                "description": description,
+                "language": language,
+                "keywords": keywords,
+            }
 
-    metadata = {
-        "title": title,
-        "description": description,
-        "language": language,
-        "keywords": keywords,
-    }
+            # Extract markdown-like content
+            body_content = []
 
-    # Extract markdown-like content
-    body_content = []
+            # Append header text with level
+            for header in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+                level = header.name
+                body_content.append(f"{'#' * int(level[1])} {header.text.strip()}")
 
-    # Append header text with level
-    for header in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
-        level = header.name
-        body_content.append(f"{'#' * int(level[1])} {header.text.strip()}")
+            # Append paragraph text
+            for paragraph in soup.find_all('p'):
+                body_content.append(paragraph.text.strip())
 
-    # Append paragraph text
-    for paragraph in soup.find_all('p'):
-        body_content.append(paragraph.text.strip())
+            # Append image alt and src
+            for img in soup.find_all('img'):
+                alt = img.get('alt', "")
+                src = img.get('src', "")
+                if alt or src:
+                    body_content.append(f"![{alt}]({src})")
 
-    # Append image alt and src
-    for img in soup.find_all('img'):
-        alt = img.get('alt', "")
-        src = img.get('src', "")
-        if alt or src:
-            body_content.append(f"![{alt}]({src})")
+            # Join the body content with newlines
+            markdown = "\n\n".join(body_content)
 
-    # Join the body content with newlines
-    markdown = "\n\n".join(body_content)
+            result = {
+                "markdown": markdown,
+                "metadata": metadata
+            }
 
-    result = {
-        "markdown": markdown,
-        "metadata": metadata
-    }
+            return {"url": url, "data": result}
 
-    return result
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+        return None
 
-# Example usage
-url = "https://walkinthewild.co.in/discover-the-top-5-migratory-birds-that-visit-india-every-year/"
-data = scrape_page(url)
+# Function to process all URLs from a file
+async def process_urls(input_file, output_dir):
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-# Print the result as formatted JSON
-output_dir = "src/input_data"
-import string
-random_name = ''.join([string.ascii_letters[(ord(c) - 65) % 26] for c in url])
-output_file = f"{output_dir}/{random_name}.json"
-with open(output_file, 'w') as file:
-    json.dump(data, file, indent=4)
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+
+        with open(input_file, 'r') as file:
+            urls = [line.strip() for line in file if line.strip()]
+
+        for url in urls:
+            tasks.append(scrape_page(session, url))
+
+        results = await asyncio.gather(*tasks)
+
+        # Save results to JSON files
+        for result in results:
+            if result:
+                url = result['url']
+                data = result['data']
+                filename = f"{output_path / sanitize_filename(url)}.json"
+                with open(filename, 'w') as f:
+                    json.dump(data, f, indent=4)
+
+# Helper function to sanitize filenames
+import re
+def sanitize_filename(url):
+    return re.sub(r'[^a-zA-Z0-9_-]', '_', url)
+
+# Entry point
+if __name__ == "__main__":
+    input_file = "urls.txt"  # File containing URLs separated by newlines
+    output_dir = "src/input_data"  # Directory to save JSON files
+    os.makedirs(output_dir, exist_ok=True)
+
+
+    asyncio.run(process_urls(input_file, output_dir))

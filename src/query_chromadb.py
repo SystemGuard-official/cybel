@@ -1,4 +1,6 @@
 import os
+
+from sympy import im
 os.environ["OPENAI_API_KEY"] = ""
 
 from langchain_chroma import Chroma
@@ -117,34 +119,40 @@ def process_response():
         print("\n" + "-" * 80 + "\n")
 
 def process_response_for_api(query_text):
-    # response = data.get(question, {
-    #     "answer": f"I understand you're asking about '{question}'. While I don't have specific information about this topic in my database, I can help you explore related topics or rephrase your question.",
-    #     "follow_ups": [
-    #         "What is AI?",
-    #         "How is AI used in everyday life?",
-    #         "What are the different types of AI?"
-    #     ]
-    # })
-    # Rephrase the query before searching
-    rephrased_query = rephrase_query_with_langchain(query_text)
+    try:
+        rephrased_query = rephrase_query_with_langchain(query_text)
 
-    semantic_search_list = semantic_search(rephrased_query)
+        semantic_search_list = semantic_search(rephrased_query)
 
-    # Generate response using LLM
-    print("Generating response...\n")
-    if semantic_search_list:
-        context = "\n".join((f"context {idx}: {content}" for idx, (content, _) in enumerate(semantic_search_list)))
-    else:
-        context = "No relevant context found."
-    response = generate_response_from_llm(query_text, rephrased_query, context)
-    
-    # formulate the output
-    answer = response.split("Answer of the query->")[1].split("Follow-up Questions:")[0].strip()
-    follow_ups = response.split("Follow-up Questions:")[1].strip().split("\n")
-    follow_ups = [f.strip() for f in follow_ups if f.strip()]
-    return {"answer": answer, "follow_ups": follow_ups}
-    
+        # Generate response using LLM
+        print("Generating response...\n")
+        if semantic_search_list:
+            context = "\n".join((f"context {idx}: {content}" for idx, (content, _) in enumerate(semantic_search_list)))
+        else:
+            context = "No relevant context found."
+        response = generate_response_from_llm(query_text, rephrased_query, context)
+        
+        # formulate the output
+        answer = response.split("Answer of the query->")[1].split("Follow-up Questions:")[0].strip()
+        follow_ups = response.split("Follow-up Questions:")[1].strip().split("\n")
+        follow_ups = [f.strip() for f in follow_ups if f.strip()]
+        return {"answer": answer, "follow_ups": follow_ups}
+    except Exception as e:
+        
+        response = {
+            "processing_time": "10ms",
+            "source": "offline",
+            "answer": "I'm sorry, I couldn't find an answer to your question. There is some error in processing the response. Contact the developer for more information.",
+            "follow_ups": [
+                "What is AI?",
+                "How is AI used in everyday life?",
+                "What are the different types of AI?"
+            ],
+        }
+        return response
 
-# Main function
-if __name__ == "__main__":
-    process_response()
+ 
+
+# # Main function
+# if __name__ == "__main__":
+#     process_response()
