@@ -7,16 +7,14 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
+from src.embedder import initialize_vector_store
 
 # Initialize the embedding model
-embeddings = OpenAIEmbeddings()
-
-# Initialize the Chroma vector store (persistent mode)
-vector_store = Chroma(
-    collection_name="my_documents", 
-    embedding_function=embeddings, 
-    persist_directory="./chromadb_persist"  # Path to persist data
+embedding_type = "sentence_transformers"  # Change to "openai" as needed
+vector_store = initialize_vector_store(
+    embedding_type=embedding_type,
+    collection_name="my_documents",
+    persist_directory="./chromadb_persist"
 )
 
 # Function to split large text into chunks
@@ -52,12 +50,6 @@ def store_file_in_chromadb_txt_file(data_dir: str, filenames: list, chunk_size: 
                 all_documents.append(document)
     
     # Add all documents to the vector store
-    # vector_store.add_documents(all_documents)
+    vector_store.add_documents(all_documents)
     print("Data successfully stored in ChromaDB.")
     print(f"Total documents to store: {len(all_documents)}")
-
-# Main function
-# if __name__ == "__main__":
-#     data_dir = "src/input_data"
-#     filenames = [f for f in os.listdir(data_dir) if f.endswith('.json')]
-#     store_file_in_chromadb_txt_file(data_dir, filenames)

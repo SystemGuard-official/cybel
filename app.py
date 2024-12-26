@@ -91,7 +91,6 @@ def clear_chat_history():
 @app.route('/')
 def home():
     chat_history = get_all_chats()
-    print(chat_history)
     return render_template('claude.html')
 
 @app.route('/ask', methods=['POST'])

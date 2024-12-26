@@ -1,11 +1,8 @@
 import os
-import time
-from sympy import im
 os.environ["OPENAI_API_KEY"] = ""
 
-from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings, OpenAI
-
+from langchain_openai import OpenAI
+from src.embedder import initialize_vector_store
 class OpenAITemperature:
     """Enum-like class for OpenAI temperature settings."""
     ZERO = 0.0
@@ -14,16 +11,15 @@ class OpenAITemperature:
     HIGH = 1.0
 
 # Initialize the embedding model and LLM
-embeddings = OpenAIEmbeddings()
 llm = OpenAI(temperature=OpenAITemperature.MEDIUM)
 
 # Load the persisted Chroma vector store
-vector_store = Chroma(
-    collection_name="my_documents", 
-    embedding_function=embeddings, 
-    persist_directory="./chromadb_persist"  # Path to the persisted data
+embedding_type = "sentence_transformers"  # Change to "openai" as needed
+vector_store = initialize_vector_store(
+    embedding_type=embedding_type,
+    collection_name="my_documents",
+    persist_directory="./chromadb_persist"
 )
-
 # Perform semantic search
 def semantic_search(query: str, top_k: int = 3):
     """Perform semantic search using the Chroma vector store."""
@@ -93,7 +89,6 @@ def rephrase_query_with_langchain(query: str) -> str:
 
 def process_response_for_api(query_text):
     try:
-        start_time = time.time()
         # rephrased_query = rephrase_query_with_langchain(query_text)
         rephrased_query = query_text
 
@@ -109,28 +104,21 @@ def process_response_for_api(query_text):
             context = "\n".join((f"context {idx}: {content}" for idx, (content, _) in enumerate(semantic_search_list)))
         else:
             context = "No relevant context found."
-        response = generate_response_from_llm(query_text, rephrased_query, context)
-        
-        # formulate the output
-        answer = response.split("Answer of the query->")[1].split("Follow-up Questions:")[0].strip()
-        follow_ups = response.split("Follow-up Questions:")[1].strip().split("\n")
-        follow_ups = [f.strip() for f in follow_ups if f.strip()]
-        end_time = time.time()
-        return {"answer": answer, "follow_ups": follow_ups,
-                "processing_time": f"{(end_time - start_time) * 1000:.2f}ms"}
-    except Exception as e:
-        
-        response = {
-            "processing_time": "10ms",
-            "answer": "I'm sorry, I couldn't find an answer to your question. There is some error in processing the response. Contact the developer for more information.",
-            "follow_ups": [
-                "What is AI?",
-                "How is AI used in everyday life?",
-                "What are the different types of AI?"
-            ],
-        }
-        return response
 
+        print(f"Context:\n{context}\n")
+        # response = generate_response_from_llm(query_text, rephrased_query, context)
+        
+        # # formulate the output
+        # answer = response.split("Answer of the query->")[1].split("Follow-up Questions:")[0].strip()
+        # follow_ups = response.split("Follow-up Questions:")[1].strip().split("\n")
+        # follow_ups = [f.strip() for f in follow_ups if f.strip()]
+        return {"answer": context, 
+                "follow_ups": ["What is AI?", "How is AI used in everyday life?", "What are the different types of AI?"]}
+    except Exception as e:
+        print(f"Error processing response: {e}")
+        return {"answer": "Error processing response.", "follow_ups": []}
+
+    
  
 
 # # Main function
