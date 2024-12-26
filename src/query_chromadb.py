@@ -94,7 +94,8 @@ def rephrase_query_with_langchain(query: str) -> str:
 def process_response_for_api(query_text):
     try:
         start_time = time.time()
-        rephrased_query = rephrase_query_with_langchain(query_text)
+        # rephrased_query = rephrase_query_with_langchain(query_text)
+        rephrased_query = query_text
 
         semantic_search_list = semantic_search(rephrased_query)
 

@@ -57,7 +57,7 @@ def store_file_in_chromadb_txt_file(data_dir: str, filenames: list, chunk_size: 
     print(f"Total documents to store: {len(all_documents)}")
 
 # Main function
-if __name__ == "__main__":
-    data_dir = "src/input_data"
-    filenames = [f for f in os.listdir(data_dir) if f.endswith('.json')]
-    store_file_in_chromadb_txt_file(data_dir, filenames)
+# if __name__ == "__main__":
+#     data_dir = "src/input_data"
+#     filenames = [f for f in os.listdir(data_dir) if f.endswith('.json')]
+#     store_file_in_chromadb_txt_file(data_dir, filenames)

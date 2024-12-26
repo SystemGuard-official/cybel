@@ -5,6 +5,7 @@ import time
 import json
 import os
 from src.query_chromadb import process_response_for_api
+from src.create_knowledge_bank import store_file_in_chromadb_txt_file
 
 app = Flask(__name__, 
     template_folder=os.path.abspath('src/templates'),
@@ -118,6 +119,13 @@ def ask():
     save_to_db(question, response, processing_time)
 
     return jsonify({**response, 'processing_time': processing_time, 'source': 'new'})
+
+@app.route('/store_data', methods=['GET'])
+def store_data():
+    data_dir = "src/input_data"
+    filenames = [f for f in os.listdir(data_dir) if f.endswith('.json')]
+    store_file_in_chromadb_txt_file(data_dir, filenames)
+    return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
     init_db()
