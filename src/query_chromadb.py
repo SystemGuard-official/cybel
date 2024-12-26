@@ -1,12 +1,10 @@
 import os
-
+import time
 from sympy import im
 os.environ["OPENAI_API_KEY"] = ""
 
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, OpenAI
-
-from src.embeddings import initialize_vector_store
 
 class OpenAITemperature:
     """Enum-like class for OpenAI temperature settings."""
@@ -15,16 +13,16 @@ class OpenAITemperature:
     MEDIUM = 0.7
     HIGH = 1.0
 
-embedding_type = "sentence_transformers"  # Change to "openai" as needed
-vector_store = initialize_vector_store(
-    embedding_type=embedding_type,
-    collection_name="my_documents",
-    persist_directory="./chromadb_persist"
-)
+# Initialize the embedding model and LLM
+embeddings = OpenAIEmbeddings()
+llm = OpenAI(temperature=OpenAITemperature.MEDIUM)
 
-llm_model = 'gpt-4o-mini'
-llm = OpenAI(
-    temperature=OpenAITemperature.MEDIUM)
+# Load the persisted Chroma vector store
+vector_store = Chroma(
+    collection_name="my_documents", 
+    embedding_function=embeddings, 
+    persist_directory="./chromadb_persist"  # Path to the persisted data
+)
 
 # Perform semantic search
 def semantic_search(query: str, top_k: int = 3):
@@ -92,39 +90,17 @@ def rephrase_query_with_langchain(query: str) -> str:
     """
     return llm.invoke(rephrase_prompt)
 
-def process_response():
-    while True:
-        query_text = input("Enter your query (or type 'exit' to quit): ").strip()
-        if query_text.lower() == "exit":
-            print("Exiting the assistant. Goodbye!")
-            break
-
-        # Rephrase the query before searching
-        print("\nRephrasing the query...")
-        rephrased_query = rephrase_query_with_langchain(query_text)
-        print(f"Rephrased Query: {rephrased_query}\n")
-
-        # Perform semantic search
-        print("Performing semantic search...\n")
-        semantic_search_list = semantic_search(rephrased_query)
-
-        # Generate response using LLM
-        print("Generating response...\n")
-        if semantic_search_list:
-            context = "\n".join((f"context {idx}: {content}" for idx, (content, _) in enumerate(semantic_search_list)))
-        else:
-            context = "No relevant context found."
-
-        response = generate_response_from_llm(query_text, rephrased_query, context)
-        print("LLM Response:\n")
-        print(response)
-        print("\n" + "-" * 80 + "\n")
 
 def process_response_for_api(query_text):
     try:
+        start_time = time.time()
         rephrased_query = rephrase_query_with_langchain(query_text)
 
         semantic_search_list = semantic_search(rephrased_query)
+
+        # apply logic based on metadata to get previous and next chunk as well
+        # there is a chance we matched with the middle of the document
+        # we will require the previous and next chunk to get the full context
 
         # Generate response using LLM
         print("Generating response...\n")
@@ -138,7 +114,9 @@ def process_response_for_api(query_text):
         answer = response.split("Answer of the query->")[1].split("Follow-up Questions:")[0].strip()
         follow_ups = response.split("Follow-up Questions:")[1].strip().split("\n")
         follow_ups = [f.strip() for f in follow_ups if f.strip()]
-        return {"answer": answer, "follow_ups": follow_ups}
+        end_time = time.time()
+        return {"answer": answer, "follow_ups": follow_ups,
+                "processing_time": f"{(end_time - start_time) * 1000:.2f}ms"}
     except Exception as e:
         
         response = {
