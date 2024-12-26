@@ -26,9 +26,7 @@ async def scrape_page(session, url):
 
             metadata = {
                 "title": title,
-                "description": description,
-                "language": language,
-                "keywords": keywords,
+                "url": url,
             }
 
             # Extract markdown-like content
@@ -43,12 +41,21 @@ async def scrape_page(session, url):
             for paragraph in soup.find_all('p'):
                 body_content.append(paragraph.text.strip())
 
-            # Append image alt and src
-            for img in soup.find_all('img'):
-                alt = img.get('alt', "")
-                src = img.get('src', "")
-                if alt or src:
-                    body_content.append(f"![{alt}]({src})")
+            # convert table in some readable format 
+            for table in soup.find_all('table'):
+                rows = table.find_all('tr')
+                for row in rows:
+                    cols = row.find_all('td')
+                    cols = [ele.text.strip() for ele in cols]
+                    body_content.append(' | '.join(cols))
+            
+
+            # Append image alt and src | not needed for now
+            # for img in soup.find_all('img'):
+            #     alt = img.get('alt', "")
+            #     src = img.get('src', "")
+            #     if alt or src:
+            #         body_content.append(f"![{alt}]({src})")
 
             # Join the body content with newlines
             markdown = "\n\n".join(body_content)

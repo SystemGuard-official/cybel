@@ -3,6 +3,8 @@ os.environ["OPENAI_API_KEY"] = ""
 
 from langchain_openai import OpenAI
 from src.embedder import initialize_vector_store
+
+
 class OpenAITemperature:
     """Enum-like class for OpenAI temperature settings."""
     ZERO = 0.0
@@ -11,7 +13,7 @@ class OpenAITemperature:
     HIGH = 1.0
 
 # Initialize the embedding model and LLM
-llm = OpenAI(temperature=OpenAITemperature.MEDIUM)
+llm = OpenAI(temperature=OpenAITemperature.LOW)
 
 # Load the persisted Chroma vector store
 embedding_type = "sentence_transformers"  # Change to "openai" as needed
@@ -29,7 +31,7 @@ def semantic_search(query: str, top_k: int = 3):
     return [(result.page_content, result.metadata) for result in results]
 
 # Generate response using LLM
-def generate_response_from_llm(query: str, rephrased_query: str, context):
+def formulate_response_using_llm(query: str, rephrased_query: str, metadata, context):
     """Generate a response from the LLM using the search results as context."""
   
     # Create improved prompt
@@ -42,32 +44,35 @@ def generate_response_from_llm(query: str, rephrased_query: str, context):
     ## Tasks:
     1. Use the provided context to generate an accurate answer to the query.
     2. Generate three follow-up questions based on the query and context.
+    3. formulate the reference/source/citation for generated answer.
 
     ## Instructions:
-    - Use only explicit internal context information to generate the answer.
-    - Response should be in the form of a paragraph.
-    - Please formulate the answer the query based on the context provided.
-    - Please formulate the follow  up questions based on the context provided.
+    - Use only explicit internal provided context information to generate the answer and follow-up questions.
+    - Response should be in the form of a paragraphs/list of points/table.
     - Remember, you shall complete ALL tasks.
-    - If the provided context contains contradictory or conflicting information, 
-    - state so providing the conflicting information.
+    - If the provided context contains contradictory or conflicting information, say you don't know the answer and provide a reason.
 
-    ### Context:
+    ### Context: to formulate the answer and follow-up questions
     {context}
 
-    ### Original Query:
+    ### Metadata: for reference/source/citation informations
+    {metadata}
+
+    ### Original Query: original query input by the user for reference
     {query}
     
-    ### Rephrased Query:
+    ### Rephrased Query: rephrased query by LLM for better understanding and clarity
     {rephrased_query}
 
-    ### Output Format:
+    ### Output Format: 
     Answer of the query->
     
     Follow-up Questions:
     1. 
     2.
     3.
+
+    Reference/Source/Citation:
     """
 
     # Pass the prompt to the LLM
@@ -101,26 +106,21 @@ def process_response_for_api(query_text):
         # Generate response using LLM
         if semantic_search_list:
             context = "\n".join((f"context {idx}: {content}" for idx, (content, _) in enumerate(semantic_search_list)))
+            metadata = "\n".join((f"metadata {idx}: {metadata}" for idx, (_, metadata) in enumerate(semantic_search_list)))
         else:
             context = "No relevant context found."
+            metadata = "No metadata found."
 
-        # response = generate_response_from_llm(query_text, rephrased_query, context)
-        
         # # formulate the output
+        # response = formulate_response_using_llm(query_text, rephrased_query, metadata, context)
         # answer = response.split("Answer of the query->")[1].split("Follow-up Questions:")[0].strip()
         # follow_ups = response.split("Follow-up Questions:")[1].strip().split("\n")
         # follow_ups = [f.strip() for f in follow_ups if f.strip()]
         
-        return {"answer": context, 
+        return {"answer": context + metadata,
                 "follow_ups": 
                 ["What is AI?", "How is AI used in everyday life?", "What are the different types of AI?"]}
     except Exception as e:
         print(f"Error processing response: {e}")
         return {"answer": "Error processing response.", "follow_ups": []}
 
-    
- 
-
-# # Main function
-# if __name__ == "__main__":
-#     process_response()

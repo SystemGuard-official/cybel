@@ -11,6 +11,7 @@ from src.create_knowledge_bank import store_file_in_chromadb_txt_file
 app = Flask(__name__, 
     template_folder=os.path.abspath('src/templates'),
     static_folder=os.path.abspath('src/static'))
+
 app.secret_key = 'your_secret_key'  # Replace with a secure key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat_history.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -28,6 +29,9 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     designation = db.Column(db.String(100), nullable=False)
 
+    def __repr__(self):
+        return f'User {self.id}'
+
 class ChatHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -36,6 +40,10 @@ class ChatHistory(db.Model):
     follow_ups = db.Column(db.Text)
     processing_time = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __repr__(self):
+        return f'ChatHistory {self.id}'
+    
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -60,10 +68,16 @@ def signup():
         email = request.form['email']
         password = generate_password_hash(request.form['password'])
         designation = request.form['designation']
+        
         if User.query.filter_by(email=email).first():
             flash('Email already exists. Please use a different email.', 'danger')
             return redirect(url_for('signup'))
-        user = User(name=name, email=email, password=password, designation=designation)
+        
+        user = User(name=name, 
+                    email=email, 
+                    password=password, 
+                    designation=designation)
+        
         db.session.add(user)
         db.session.commit()
         flash('Signup successful! Please log in.', 'success')
@@ -119,7 +133,17 @@ def chat_history():
 @login_required
 def ask():
     start_time = time.time()
-    question = request.json.get('question')
+    data = request.get_json()
+    if not data or 'question' not in data:
+        return jsonify({'error': 'Question cannot be empty or null.'})
+    question = data['question']
+    
+    # check if question is empty
+    if not question:
+        return jsonify({'error': 'Question cannot be empty or null.'})
+    
+    # remove leading and trailing whitespaces and convert to lowercase
+    question = question.strip().lower()
 
     # check in database if the question has been asked before
     chat = ChatHistory.query.filter_by(user_id=current_user.id, question=question).first()
