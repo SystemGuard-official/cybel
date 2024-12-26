@@ -99,7 +99,6 @@ def process_response_for_api(query_text):
         # we will require the previous and next chunk to get the full context
 
         # Generate response using LLM
-        print("Generating response...\n")
         if semantic_search_list:
             context = "\n".join((f"context {idx}: {content}" for idx, (content, _) in enumerate(semantic_search_list)))
         else:

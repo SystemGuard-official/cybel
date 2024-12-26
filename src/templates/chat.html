@@ -8,23 +8,66 @@
     <link href="https://unpkg.com/tailwindcss@^2.0/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         }
-
-        ::-webkit-scrollbar-track {
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .message-source-history {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .message-source-generated {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .message-source-system {
+            background: rgba(75, 85, 99, 0.1);
+            border-left: 4px solid #4b5563;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
-
-        ::-webkit-scrollbar-thumb {
-            background: #ddd;
-            border-radius: 4px;
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
         }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #ccc;
+        
+        .message-input {
+            background: rgba(243, 244, 246, 0.8);
+            backdrop-filter: blur(8px);
+        }
+        
+        .source-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        .source-badge-history {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+        }
+        
+        .source-badge-generated {
+            background: rgba(139, 92, 246, 0.1);
+            color: #6d28d9;
+        }
+        
+        .source-badge-system {
+            background: rgba(75, 85, 99, 0.1);
+            color: #374151;
         }
     </style>
 </head>
@@ -37,8 +80,11 @@
             <!-- Header -->
             <div class="p-4 border-b border-gray-200">
                 <div class="flex items-center gap-3 mb-4">
-                    <img src="https://github.com/Py-Contributors/Cybel/raw/v2.0.0/images/cybel_icon.jpg" alt="Cybel"
-                        class="w-12 h-12 rounded-full object-cover border-2 border-gray-200 shadow-sm">
+                    <div class="relative">
+                        <img src="https://github.com/Py-Contributors/Cybel/raw/v2.0.0/images/cybel_icon.jpg" alt="Cybel"
+                            class="w-12 h-12 rounded-full object-cover border-2 border-gray-200 shadow-sm">
+                        <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+                    </div>
                     <div>
                         <h1 class="font-semibold text-gray-800">Cybel v1.0.0</h1>
                         <div class="flex items-center gap-2">
@@ -48,22 +94,12 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="startNewChat()"
-                    class="w-full bg-gray-800 text-white rounded-lg p-3 text-sm hover:bg-gray-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    New conversation
+                <button onclick="startNewChat()" class="w-full mb-2 px-4 py-3 rounded-xl text-white font-medium text-sm transition-all hover:opacity-90" style="background: var(--primary-gradient)">
+                    New Conversation
                 </button>
-                <button onclick="clearChatHistory()"
-                    class="w-full bg-gray-800 text-white rounded-lg p-3 text-sm hover:bg-gray-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-sm mt-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Clear chat history
+                
+                <button onclick="clearChatHistory()" class="w-full px-4 py-3 rounded-xl text-gray-700 font-medium text-sm bg-gray-100 hover:bg-gray-200 transition-all">
+                    Clear History
                 </button>
             </div>
 
@@ -157,9 +193,9 @@
                 role: 'assistant',
                 content: 'Hello! I\'m here to assist you today.',
                 follow_ups: [
-                    'What can you help me with?',
-                    'Tell me about your capabilities',
-                    'How do you work?'
+                    'What is your name?',
+                    'Tell me about yourself',
+                    'What can you do?'
                 ],
                 timestamp: Date.now(),
                 processing_time: 0,
@@ -177,10 +213,12 @@
             innerDiv.className = 'max-w-3xl mx-auto flex gap-6';
 
             const iconDiv = document.createElement('div');
-            iconDiv.className = 'w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 text-sm font-medium';
-            iconDiv.style.backgroundColor = message.role === 'user' ? '#2A2B32' : '#2A2B32';
-            iconDiv.textContent = message.role === 'user' ? 'U' : 'C';
-            iconDiv.style.color = 'white';
+            iconDiv.className = 'w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0';
+            const img = document.createElement('img');
+            img.src = message.role === 'user' ? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSA1zygA3rubv-VK0DrVcQ02Po79kJhXo_A&s' : 'https://github.com/Py-Contributors/Cybel/raw/v2.0.0/images/cybel_icon.jpg';
+            img.alt = message.role === 'user' ? 'User' : 'Cybel';
+            img.className = 'w-full h-full rounded-md object-cover';
+            iconDiv.appendChild(img);
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'flex-1 space-y-3';

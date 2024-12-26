@@ -5,7 +5,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
 import time
-from functools import lru_cache
 from src.query_chromadb import process_response_for_api
 from src.create_knowledge_bank import store_file_in_chromadb_txt_file
 
@@ -121,6 +120,19 @@ def chat_history():
 def ask():
     start_time = time.time()
     question = request.json.get('question')
+
+    # check in database if the question has been asked before
+    chat = ChatHistory.query.filter_by(user_id=current_user.id, question=question).first()
+    if chat:
+        end_time = time.time()
+        response = {
+            'answer': chat.answer,
+            'follow_ups': json.loads(chat.follow_ups),
+            'processing_time': end_time - start_time,
+            'source': 'history'
+
+        }
+        return jsonify(response)
    
     response = process_response_for_api(question)
     processing_time = time.time() - start_time
@@ -128,7 +140,7 @@ def ask():
     # Save to database
     save_chat_history(question, response, processing_time, current_user.id)
 
-    return jsonify({**response, 'processing_time': processing_time, 'source': 'new'})
+    return jsonify({**response, 'processing_time': processing_time, 'source': 'generated'})
 
 @app.route('/store_data', methods=['GET'])
 @login_required
