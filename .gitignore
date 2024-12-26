@@ -171,3 +171,4 @@ cython_debug/
 .pypirc
 *.bin
 *.sqlite3
+*.json

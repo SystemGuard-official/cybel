@@ -113,7 +113,6 @@ def chat_history():
         'processing_time': chat.processing_time,
         'timestamp': chat.timestamp
     } for chat in history]
-    print("Chat data: ", chat_data)
 
     return jsonify(chat_data)
 
@@ -122,12 +121,7 @@ def chat_history():
 def ask():
     start_time = time.time()
     question = request.json.get('question')
-    # check if question is already answered
-    if ChatHistory.query.filter_by(question=question).first():
-        response = ChatHistory.query.filter_by(question=question).first()
-        processing_time = time.time() - start_time
-        return jsonify({**response, 'processing_time': processing_time, 'source': 'cached'})
-
+   
     response = process_response_for_api(question)
     processing_time = time.time() - start_time
 
@@ -154,6 +148,6 @@ def clear_chat_history():
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()  # Initialize database tables
+    # with app.app_context():
+    #     db.create_all()  # Initialize database tables
     app.run(host='0.0.0.0', port=5000, debug=True)

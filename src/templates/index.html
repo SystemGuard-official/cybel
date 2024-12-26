@@ -1,98 +1,101 @@
 {% extends 'base.html' %}
-{% block title %}ChatApp{% endblock %}
+{% block title %}Cybel - AI Assistant{% endblock %}
 {% block content %}
 
 <!-- Hero Section -->
-<section class="bg-blue-600 text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <h1 class="text-4xl font-bold">Welcome to ChatApp</h1>
-        <p class="mt-4 text-lg">Connect, engage, and enhance your business communication with our AI-powered chat
-            platform.</p>
-        <div class="mt-6">
-            <a href="/signup"
-                class="px-6 py-3 bg-white text-blue-600 rounded-md text-sm font-medium hover:bg-gray-100">Get
-                Started</a>
+<section class="min-h-screen flex items-center justify-center ">
+    <div class="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-12 items-center">
+        <div class="space-y-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900">Meet Cybel</h1>
+            <p class="text-xl text-slate-600">Your intelligent AI companion, ready to assist with thoughtful conversations and helpful insights.</p>
+        </div>
+        <div class="relative">
+            <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/4iwsmt2wxe3s769y7bo6.png" alt="Cybel Interface" class="rounded-lg"/>
         </div>
     </div>
 </section>
 
-<!-- Use Cases Section -->
-<section class="py-12 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-2xl font-bold text-gray-800">Why Choose ChatApp?</h2>
-        <p class="mt-2 text-gray-600">Here are some ways ChatApp can help you and your business:</p>
-        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-6 shadow-md rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-800">Customer Support</h3>
-                <p class="mt-2 text-gray-600">Provide 24/7 support to your customers using AI-powered chatbots.</p>
-            </div>
-            <div class="bg-white p-6 shadow-md rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-800">Sales Assistance</h3>
-                <p class="mt-2 text-gray-600">Boost conversions with personalized interactions and recommendations.</p>
-            </div>
-            <div class="bg-white p-6 shadow-md rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-800">Team Collaboration</h3>
-                <p class="mt-2 text-gray-600">Enhance team productivity with real-time communication tools.</p>
+<!-- Story Section -->
+<section class="py-24 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-16 items-center mb-24">
+            <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/4iwsmt2wxe3s769y7bo6.png" alt="Natural Conversation" class="rounded-2xl"/>
+            <div class="space-y-4">
+                <h2 class="text-3xl font-bold text-slate-900">Natural Conversations</h2>
+                <p class="text-lg text-slate-600">Cybel engages in meaningful dialogue, understanding context and nuance to provide thoughtful responses.</p>
             </div>
         </div>
-    </div>
-</section>
 
-<!-- Pricing Section -->
-<section class="py-12 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-2xl font-bold text-gray-800">Pricing</h2>
-        <p class="mt-2 text-gray-600">Choose a plan that works for you:</p>
-        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-gray-50 p-6 shadow-md rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-800">Free Plan</h3>
-                <p class="mt-2 text-gray-600">$0/month</p>
-                <ul class="mt-4 text-gray-600">
-                    <li>✓ Basic features</li>
-                    <li>✓ Limited support</li>
-                </ul>
-                <a href="/signup"
-                    class="mt-6 block px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Sign Up</a>
+        <div class="grid md:grid-cols-2 gap-16 items-center mb-24">
+            <div class="space-y-4 md:order-1">
+                <h2 class="text-3xl font-bold text-slate-900">Knowledge & Learning</h2>
+                <p class="text-lg text-slate-600">With extensive knowledge across various topics, Cybel helps you explore ideas and gain new perspectives.</p>
             </div>
-            <div class="bg-gray-50 p-6 shadow-md rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-800">Pro Plan</h3>
-                <p class="mt-2 text-gray-600">$29/month</p>
-                <ul class="mt-4 text-gray-600">
-                    <li>✓ Advanced features</li>
-                    <li>✓ Priority support</li>
-                </ul>
-                <a href="/signup"
-                    class="mt-6 block px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Sign Up</a>
-            </div>
-            <div class="bg-gray-50 p-6 shadow-md rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-800">Enterprise Plan</h3>
-                <p class="mt-2 text-gray-600">Custom pricing</p>
-                <ul class="mt-4 text-gray-600">
-                    <li>✓ Full feature set</li>
-                    <li>✓ Dedicated support</li>
-                </ul>
-                <a href="/contact"
-                    class="mt-6 block px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Contact
-                    Us</a>
+            <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/4iwsmt2wxe3s769y7bo6.png" alt="Knowledge Sharing" class="rounded-2xl md:order-2"/>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-16 items-center">
+            <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/4iwsmt2wxe3s769y7bo6.png" alt="Helpful Assistant" class="rounded-2xl"/>
+            <div class="space-y-4">
+                <h2 class="text-3xl font-bold text-slate-900">Always Helpful</h2>
+                <p class="text-lg text-slate-600">From writing and analysis to coding and math, Cybel is here to assist with a wide range of tasks.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- About Section -->
-<section class="py-12 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-2xl font-bold text-gray-800">About Us</h2>
-        <p class="mt-4 text-gray-600">At ChatApp, we are committed to revolutionizing the way businesses interact with
-            their customers. Our mission is to make communication seamless and accessible to everyone through
-            cutting-edge AI technology.</p>
+<!-- Interaction Demo -->
+<section class="py-24 bg-white">
+    <div class="max-w-3xl mx-auto px-4">
+        <div class="bg-slate-50 rounded-2xl p-6 shadow-lg space-y-4">
+            <div class="flex gap-4 items-start">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0"></div>
+                <div class="flex-1 bg-white p-4 rounded-2xl shadow-sm">
+                    <p class="text-slate-600">Hi! I'm Cybel. How can I help you today?</p>
+                </div>
+            </div>
+            <div class="flex gap-4 items-start justify-end">
+                <div class="flex-1 bg-blue-600 p-4 rounded-2xl shadow-sm">
+                    <p class="text-white">Can you help me understand quantum computing?</p>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-slate-300 flex-shrink-0"></div>
+            </div>
+            <div class="flex gap-4 items-start">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0"></div>
+                <div class="flex-1 bg-white p-4 rounded-2xl shadow-sm">
+                    <p class="text-slate-600">Of course! Let's start with the basics. Quantum computing harnesses quantum mechanics to process information in fundamentally new ways...</p>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
-<!-- Footer -->
-<footer class="bg-gray-800 text-white py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p>&copy; 2024 ChatApp. All rights reserved.</p>
+<!-- Simple Call to Action -->
+<section class="py-16 bg-slate-50">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold text-slate-900 mb-6">Start Chatting with Cybel</h2>
+        <p class="text-lg text-slate-600 mb-8">Experience thoughtful conversations and helpful assistance.</p>
+        <a href="/chat" class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            Begin Conversation
+        </a>
     </div>
-</footer>
+</section>
+
+<style>
+    /* Smooth scroll behavior */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Fade-in animation for sections */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    section {
+        animation: fadeIn 0.6s ease-out forwards;
+    }
+</style>
+
 {% endblock %}
