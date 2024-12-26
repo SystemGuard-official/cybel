@@ -49,6 +49,24 @@
                     </svg>
                     New conversation
                 </button>
+                
+                            <!-- @app.route('/clear_chat_history')
+            def clear_chat_history():
+                try:
+                    conn = get_db_connection()
+                    c = conn.cursor()
+                    c.execute('''DELETE FROM chat_history''')
+                    conn.commit()
+                finally:
+                    conn.close()
+                return jsonify({'status': 'success'}) -->
+
+                <button onclick="clearChatHistory()" class="w-full bg-gray-800 text-white rounded-lg p-3 text-sm hover:bg-gray-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-sm mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Clear chat history
+                </button>
             </div>
 
            <!-- About Section -->
@@ -268,6 +286,20 @@ function startNewChat() {
     document.getElementById('chat-messages').innerHTML = '';
     addWelcomeMessage();
     updateChatHistory();
+}
+
+function clearChatHistory() {
+    fetch('/clear_chat_history', { method: 'GET' })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(() => updateChatHistory())
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
 }
 
 // Initialize

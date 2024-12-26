@@ -3,20 +3,21 @@ import re
 os.environ["OPENAI_API_KEY"] = ""
 
 import json
-from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
+from src.embeddings import initialize_vector_store
 
 # Initialize the embedding model
-embeddings = OpenAIEmbeddings()
+embedding_model_name = "text-embedding-3-small"
+embeddings = OpenAIEmbeddings(model=embedding_model_name)
 
 # Initialize the Chroma vector store (persistent mode)
-vector_store = Chroma(
-    collection_name="my_documents", 
-    embedding_function=embeddings, 
-    persist_directory="./chromadb_persist"  # Path to persist data
+embedding_type = "sentence_transformers"  # Change to "openai" as needed
+vector_store = initialize_vector_store(
+    embedding_type=embedding_type,
+    collection_name="my_documents",
+    persist_directory="./chromadb_persist"
 )
 
 # Function to split large text into chunks

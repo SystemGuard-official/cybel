@@ -76,6 +76,17 @@ def chat_history():
     chat_history = get_all_chats()
     return jsonify(chat_history)
 
+@app.route('/clear_chat_history')
+def clear_chat_history():
+    try:
+        conn = get_db_connection()
+        c = conn.cursor()
+        c.execute('''DELETE FROM chat_history''')
+        conn.commit()
+    finally:
+        conn.close()
+    return jsonify({'status': 'success'})
+
 @app.route('/')
 def home():
     chat_history = get_all_chats()

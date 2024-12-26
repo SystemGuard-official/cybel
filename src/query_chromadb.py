@@ -6,6 +6,8 @@ os.environ["OPENAI_API_KEY"] = ""
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, OpenAI
 
+from src.embeddings import initialize_vector_store
+
 class OpenAITemperature:
     """Enum-like class for OpenAI temperature settings."""
     ZERO = 0.0
@@ -13,16 +15,16 @@ class OpenAITemperature:
     MEDIUM = 0.7
     HIGH = 1.0
 
-# Initialize the embedding model and LLM
-embeddings = OpenAIEmbeddings()
-llm = OpenAI(temperature=OpenAITemperature.MEDIUM)
-
-# Load the persisted Chroma vector store
-vector_store = Chroma(
-    collection_name="my_documents", 
-    embedding_function=embeddings, 
-    persist_directory="./chromadb_persist"  # Path to the persisted data
+embedding_type = "sentence_transformers"  # Change to "openai" as needed
+vector_store = initialize_vector_store(
+    embedding_type=embedding_type,
+    collection_name="my_documents",
+    persist_directory="./chromadb_persist"
 )
+
+llm_model = 'gpt-4o-mini'
+llm = OpenAI(
+    temperature=OpenAITemperature.MEDIUM)
 
 # Perform semantic search
 def semantic_search(query: str, top_k: int = 3):
@@ -141,7 +143,6 @@ def process_response_for_api(query_text):
         
         response = {
             "processing_time": "10ms",
-            "source": "offline",
             "answer": "I'm sorry, I couldn't find an answer to your question. There is some error in processing the response. Contact the developer for more information.",
             "follow_ups": [
                 "What is AI?",
