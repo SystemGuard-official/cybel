@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ChatApp{% endblock %}</title>
+    <link href="https://unpkg.com/tailwindcss@^2.0/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-['Inter']">
+    <!-- Navbar -->
+    <header class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <a href="/" class="text-2xl font-bold text-gray-800">Claude</a>
+                <div class="space-x-4">
+                    <a href="/login" class="text-sm text-gray-700 hover:text-gray-900">Log In</a>
+                    <a href="/signup" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        <section class="text-center py-12">
+            <h1 class="text-4xl font-bold">Welcome to ChatApp</h1>
+            <p class="mt-4 text-lg text-gray-600">This is the base layout. Replace content by overriding this block in your page templates.</p>
+        </section>
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2024 ChatApp. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

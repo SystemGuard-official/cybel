@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}ChatApp{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="bg-blue-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+        <h1 class="text-4xl font-bold">Welcome to ChatApp</h1>
+        <p class="mt-4 text-lg">Connect, engage, and enhance your business communication with our AI-powered chat
+            platform.</p>
+        <div class="mt-6">
+            <a href="/signup"
+                class="px-6 py-3 bg-white text-blue-600 rounded-md text-sm font-medium hover:bg-gray-100">Get
+                Started</a>
+        </div>
+    </div>
+</section>
+
+<!-- Use Cases Section -->
+<section class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-2xl font-bold text-gray-800">Why Choose ChatApp?</h2>
+        <p class="mt-2 text-gray-600">Here are some ways ChatApp can help you and your business:</p>
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-6 shadow-md rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800">Customer Support</h3>
+                <p class="mt-2 text-gray-600">Provide 24/7 support to your customers using AI-powered chatbots.</p>
+            </div>
+            <div class="bg-white p-6 shadow-md rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800">Sales Assistance</h3>
+                <p class="mt-2 text-gray-600">Boost conversions with personalized interactions and recommendations.</p>
+            </div>
+            <div class="bg-white p-6 shadow-md rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800">Team Collaboration</h3>
+                <p class="mt-2 text-gray-600">Enhance team productivity with real-time communication tools.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="py-12 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-2xl font-bold text-gray-800">Pricing</h2>
+        <p class="mt-2 text-gray-600">Choose a plan that works for you:</p>
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-gray-50 p-6 shadow-md rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800">Free Plan</h3>
+                <p class="mt-2 text-gray-600">$0/month</p>
+                <ul class="mt-4 text-gray-600">
+                    <li>✓ Basic features</li>
+                    <li>✓ Limited support</li>
+                </ul>
+                <a href="/signup"
+                    class="mt-6 block px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Sign Up</a>
+            </div>
+            <div class="bg-gray-50 p-6 shadow-md rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800">Pro Plan</h3>
+                <p class="mt-2 text-gray-600">$29/month</p>
+                <ul class="mt-4 text-gray-600">
+                    <li>✓ Advanced features</li>
+                    <li>✓ Priority support</li>
+                </ul>
+                <a href="/signup"
+                    class="mt-6 block px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Sign Up</a>
+            </div>
+            <div class="bg-gray-50 p-6 shadow-md rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800">Enterprise Plan</h3>
+                <p class="mt-2 text-gray-600">Custom pricing</p>
+                <ul class="mt-4 text-gray-600">
+                    <li>✓ Full feature set</li>
+                    <li>✓ Dedicated support</li>
+                </ul>
+                <a href="/contact"
+                    class="mt-6 block px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Contact
+                    Us</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-2xl font-bold text-gray-800">About Us</h2>
+        <p class="mt-4 text-gray-600">At ChatApp, we are committed to revolutionizing the way businesses interact with
+            their customers. Our mission is to make communication seamless and accessible to everyone through
+            cutting-edge AI technology.</p>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p>&copy; 2024 ChatApp. All rights reserved.</p>
+    </div>
+</footer>
+{% endblock %}

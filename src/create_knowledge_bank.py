@@ -3,8 +3,6 @@ import re
 os.environ["OPENAI_API_KEY"] = ""
 
 import json
-from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from src.embedder import initialize_vector_store

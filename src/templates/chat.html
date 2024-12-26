@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybel AI Assistant</title>
+    <link href="https://unpkg.com/tailwindcss@^2.0/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ccc;
+        }
+    </style>
+</head>
+
+<body class="bg-white min-h-screen font-['Inter']">
+    <div class="flex h-screen">
+        <!-- Side Navigation -->
+
+        <div class="w-80 bg-[#F9FAFB] border-r border-gray-200 p-4 flex flex-col">
+            <!-- Header -->
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="https://github.com/Py-Contributors/Cybel/raw/v2.0.0/images/cybel_icon.jpg" alt="Cybel"
+                        class="w-12 h-12 rounded-full object-cover border-2 border-gray-200 shadow-sm">
+                    <div>
+                        <h1 class="font-semibold text-gray-800">Cybel v1.0.0</h1>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-500">AI Assistant</span>
+                            <span
+                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Online</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="startNewChat()"
+                    class="w-full bg-gray-800 text-white rounded-lg p-3 text-sm hover:bg-gray-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    New conversation
+                </button>
+                <button onclick="clearChatHistory()"
+                    class="w-full bg-gray-800 text-white rounded-lg p-3 text-sm hover:bg-gray-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-sm mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Clear chat history
+                </button>
+            </div>
+
+            <!-- About Section -->
+            <div class="p-4 border-b border-gray-200 bg-white">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">About Cybel</h2>
+                <div class="text-sm text-gray-600 space-y-2">
+                    <p class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        RAG-powered AI Chatbot
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Built with Python & LangChain
+                    </p>
+                </div>
+            </div>
+
+            <!-- Chat History -->
+            <div class="flex-1 overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Chat History</h2>
+                </div>
+                <div id="chat-history" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <!-- Chat history items will be added here -->
+                </div>
+            </div>
+            <!-- Logged-in User Info -->
+            <div class="flex items-center justify-between mt-2 bg-gray-100 p-3 rounded-lg shadow-sm">
+                <div class="flex items-center gap-3">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.name }}&background=random"
+                        alt="User Avatar" class="w-10 h-10 rounded-full border border-gray-300">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">{{ current_user.name }}</p>
+                        <p class="text-xs text-gray-500">{{ current_user.email }}</p>
+                    </div>
+                </div>
+                <a href="/logout" class="text-sm text-red-600 hover:underline flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M3 10a7 7 0 1114 0 7 7 0 01-14 0zm7-3a1 1 0 00-1 1v2H6a1 1 0 000 2h3v2a1 1 0 102 0v-2h3a1 1 0 100-2h-3V8a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="flex-1 flex flex-col bg-white">
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto">
+                <!-- Messages will be added here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t border-gray-100 p-6">
+                <div class="max-w-3xl mx-auto relative">
+                    <textarea id="message-input" rows="3"
+                        class="w-full p-4 pr-12 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent resize-none text-gray-700 text-sm placeholder-gray-400"
+                        placeholder="Message..."></textarea>
+                    <button onclick="sendMessage()"
+                        class="absolute right-3 bottom-3 p-2 bg-[#2A2B32] text-white rounded-lg hover:bg-gray-800 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChatId = Date.now();
+        let chats = {};
+
+        function formatTime(timestamp) {
+            return new Date(timestamp).toLocaleString();
+        }
+
+        function addWelcomeMessage() {
+            const welcomeMessage = {
+                role: 'assistant',
+                content: 'Hello! I\'m here to assist you today.',
+                follow_ups: [
+                    'What can you help me with?',
+                    'Tell me about your capabilities',
+                    'How do you work?'
+                ],
+                timestamp: Date.now(),
+                processing_time: 0,
+                source: 'system'
+            };
+            addMessageToUI(welcomeMessage);
+        }
+
+        function addMessageToUI(message) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `px-4 py-6 ${message.role === 'user' ? 'bg-white' : 'bg-[#F9FAFB]'}`;
+
+            const innerDiv = document.createElement('div');
+            innerDiv.className = 'max-w-3xl mx-auto flex gap-6';
+
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 text-sm font-medium';
+            iconDiv.style.backgroundColor = message.role === 'user' ? '#2A2B32' : '#2A2B32';
+            iconDiv.textContent = message.role === 'user' ? 'U' : 'C';
+            iconDiv.style.color = 'white';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'flex-1 space-y-3';
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'text-gray-700 text-sm leading-relaxed';
+            messageContent.textContent = message.content;
+            contentDiv.appendChild(messageContent);
+
+            // Add technical details if available
+            if (message.processing_time || message.source) {
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'text-xs text-gray-400 space-x-4';
+
+                if (message.processing_time) {
+                    const processingTime = document.createElement('span');
+                    processingTime.textContent = `Processing: ${(message.processing_time * 1000).toFixed(2)}ms`;
+                    detailsDiv.appendChild(processingTime);
+                }
+
+                if (message.source) {
+                    const source = document.createElement('span');
+                    source.textContent = `Source: ${message.source}`;
+                    detailsDiv.appendChild(source);
+                }
+
+                if (message.timestamp) {
+                    const timestamp = document.createElement('span');
+                    timestamp.textContent = formatTime(message.timestamp);
+                    detailsDiv.appendChild(timestamp);
+                }
+
+                contentDiv.appendChild(detailsDiv);
+            }
+
+            if (message.follow_ups && message.follow_ups.length > 0) {
+                const followUpsDiv = document.createElement('div');
+                followUpsDiv.className = 'flex flex-wrap gap-2 pt-2';
+                message.follow_ups.forEach(q => {
+                    const button = document.createElement('button');
+                    button.className = 'px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-md text-sm text-gray-700 transition-colors';
+                    button.textContent = q;
+                    button.onclick = () => handleFollowUp(q);
+                    followUpsDiv.appendChild(button);
+                });
+                contentDiv.appendChild(followUpsDiv);
+            }
+
+            innerDiv.appendChild(iconDiv);
+            innerDiv.appendChild(contentDiv);
+            messageDiv.appendChild(innerDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateChatHistory() {
+            const historyDiv = document.getElementById('chat-history');
+            historyDiv.innerHTML = '';
+
+            fetch('/chat_history')
+                .then(response => response.json())
+                .then(history => {
+                    history.forEach(chat => {
+                        const div = document.createElement('div');
+                        div.className = 'p-3 hover:bg-gray-100 cursor-pointer rounded-md text-sm text-gray-700 flex flex-col';
+                        div.innerHTML = `
+                            <span class="truncate">${chat.question}</span>
+                            <span class="text-xs text-gray-400">${formatTime(chat.timestamp)}</span>
+                        `;
+                        div.onclick = () => handleFollowUp(chat.question);
+                        historyDiv.appendChild(div);
+                    });
+                });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            input.value = '';
+
+            const userMessage = {
+                role: 'user',
+                content: message,
+                timestamp: Date.now()
+            };
+            addMessageToUI(userMessage);
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: message })
+                });
+                const data = await response.json();
+
+                const assistantMessage = {
+                    role: 'assistant',
+                    content: data.answer,
+                    follow_ups: data.follow_ups,
+                    processing_time: data.processing_time,
+                    source: data.source,
+                    timestamp: Date.now()
+                };
+                addMessageToUI(assistantMessage);
+                updateChatHistory();
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMessage = {
+                    role: 'assistant',
+                    content: 'Sorry, there was an error processing your request. Please try again.',
+                    timestamp: Date.now()
+                };
+                addMessageToUI(errorMessage);
+            }
+        }
+
+        function handleFollowUp(question) {
+            document.getElementById('message-input').value = question;
+            sendMessage();
+        }
+
+        function startNewChat() {
+            currentChatId = Date.now();
+            chats[currentChatId] = [];
+            document.getElementById('chat-messages').innerHTML = '';
+            addWelcomeMessage();
+            updateChatHistory();
+        }
+
+        function clearChatHistory() {
+            fetch('/clear_chat_history', { method: 'GET' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(() => updateChatHistory())
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            addWelcomeMessage();
+            updateChatHistory();
+        });
+
+        // Handle enter key
+        document.getElementById('message-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -105,15 +105,16 @@ def process_response_for_api(query_text):
         else:
             context = "No relevant context found."
 
-        print(f"Context:\n{context}\n")
         # response = generate_response_from_llm(query_text, rephrased_query, context)
         
         # # formulate the output
         # answer = response.split("Answer of the query->")[1].split("Follow-up Questions:")[0].strip()
         # follow_ups = response.split("Follow-up Questions:")[1].strip().split("\n")
         # follow_ups = [f.strip() for f in follow_ups if f.strip()]
+        
         return {"answer": context, 
-                "follow_ups": ["What is AI?", "How is AI used in everyday life?", "What are the different types of AI?"]}
+                "follow_ups": 
+                ["What is AI?", "How is AI used in everyday life?", "What are the different types of AI?"]}
     except Exception as e:
         print(f"Error processing response: {e}")
         return {"answer": "Error processing response.", "follow_ups": []}
