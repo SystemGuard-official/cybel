@@ -48,8 +48,8 @@ def formulate_response_using_llm(query: str, rephrased_query: str, metadata, con
 
     ## Instructions:
     - Use only explicit internal provided context information to generate the answer and follow-up questions.
-    - Response should be in the form of a paragraphs/list of points/table.
-    - Remember, you shall complete ALL tasks.
+    - Response should be in the form of a paragraphs or list or points of table as per the query.
+    - Remember, you shall complete ALL tasks to the best of your ability.
     - If the provided context contains contradictory or conflicting information, say you don't know the answer and provide a reason.
 
     ### Context: to formulate the answer and follow-up questions
