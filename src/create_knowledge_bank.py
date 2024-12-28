@@ -1,6 +1,6 @@
 import os
 import re
-os.environ["OPENAI_API_KEY"] = ""
+
 
 import json
 from langchain.schema import Document
