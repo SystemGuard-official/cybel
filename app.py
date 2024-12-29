@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
 import time
-from src.query_chromadb import process_response_for_api
+from src.query_chromadb import process_query
 from src.create_knowledge_bank import store_file_in_chromadb_txt_file
 
 # Configurations
@@ -155,7 +155,7 @@ def ask():
             }
             return jsonify(response)
         
-        response = process_response_for_api(question)
+        response = process_query(question)
         processing_time = time.time() - start_time
         save_chat_history(question, response, processing_time, current_user.id)
         return jsonify({**response, 'processing_time': processing_time, 'source': 'generated'})
