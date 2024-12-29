@@ -3,8 +3,6 @@ from sentence_transformers import SentenceTransformer
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 
-os.environ["OPENAI_API_KEY"] = ""
-
 # Custom embedding class for SentenceTransformers
 class SentenceTransformerEmbeddings:
     def __init__(self, model_name):

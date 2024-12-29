@@ -1,7 +1,6 @@
 import os
 import re
 
-
 import json
 from langchain.schema import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -36,10 +35,10 @@ def store_file_in_chromadb_txt_file(data_dir: str, filenames: list, chunk_size: 
         with open(file_path, 'r', encoding='utf-8') as file:
             content = json.load(file)
 
-            markdown_content = content["markdown"]
+            context = content["context"]
             metadata = content["metadata"]
 
-            chunks = split_text_into_chunks(markdown_content, chunk_size, overlap)
+            chunks = split_text_into_chunks(context, chunk_size, overlap)
             # remove more then one space and more then one new line
             chunks = [re.sub(r'\s+', ' ', chunk) for chunk in chunks]
             for i, chunk in enumerate(chunks):

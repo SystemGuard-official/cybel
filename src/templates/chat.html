@@ -93,6 +93,7 @@
             background: rgba(79, 70, 229, 0.15);
             transform: translateY(-1px);
         }
+        
     </style>
 </head>
 
@@ -272,8 +273,6 @@
                     detailsDiv.appendChild(processingTime);
                 }
 
-
-
                 if (message.source) {
                     const source = document.createElement('span');
                     source.className = 'flex items-center gap-1';
@@ -396,7 +395,7 @@
                     content: data.answer,
                     follow_ups: data.follow_ups,
                     processing_time: data.processing_time,
-                    source: data.source,
+                    source: data.references,
                     timestamp: Date.now()
                 };
                 addMessageToUI(assistantMessage);

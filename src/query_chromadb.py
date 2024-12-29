@@ -1,11 +1,8 @@
 import os
+
 from langchain_openai import OpenAI
 from src.embedder import initialize_vector_store
 from src.stopword_filter import filter_stopwords
-
-# Set API key for OpenAI
-os.environ["OPENAI_API_KEY"] = ""
-
 
 class OpenAITemperature:
     """Enum-like class for OpenAI temperature settings."""
@@ -14,12 +11,11 @@ class OpenAITemperature:
     MEDIUM = 0.7
     HIGH = 1.0
 
-
 # Initialize the embedding model and LLM
 try:
-    llm = OpenAI(temperature=OpenAITemperature.LOW)
+    llm = OpenAI(temperature=OpenAITemperature.LOW,)
 except Exception as e:
-    raise RuntimeError("Failed to initialize the OpenAI LLM. Ensure API keys and configurations are correct.") from e
+    print(f"Error initializing OpenAI model: {e}")
 
 # Load the persisted Chroma vector store
 try:
@@ -57,40 +53,40 @@ def semantic_search(query: str, top_k: int = 3):
     return [(result.page_content, result.metadata) for result in results] if results else []
 
 
-def generate_response_with_context(query: str, rephrased_query: str, metadata: str, context: str):
+def generate_response_with_context(query: str, retrieved_documents: str, metadata: str):
     """
     Generate a response using LLM based on the query and retrieved context.
 
     Args:
         query (str): The original user query.
-        rephrased_query (str): The rephrased query for better understanding.
+        retrieved_documents (str): Retrieved context for generating the response.
         metadata (str): Metadata for references.
-        context (str): Retrieved context for generating the response.
 
     Returns:
         str: The formatted response.
     """
     prompt = f"""
-    System: You are an intelligent assistant creating a response to a query based on the provided context.
+    You are tasked with answering a question based STRICTLY on the provided context.
+        
+    Rules and Guidelines:
+    1. ONLY use information from the provided context documents
+    2. If the answer cannot be fully derived from the context, state "Cannot provide a complete answer based on available context"
+    3. Do not make assumptions or use external knowledge
+    5. Response should be in the form of a paragraph or a list of key points.
+    6. create References section with the sources used to answer the query.
 
-    Use the following context to answer the query. If you don't know the answer, say so.
+    Use the following retrieved documents to answer the query or generate follow-up questions. If the answer is not in the documents, respond with "I don't know."
+    
+    Retrieved Documents:
+    {retrieved_documents}
 
-    ## Tasks:
-    1. Generate an accurate answer to the query using the context.
-    2. Provide three relevant follow-up questions based on the query and context.
-    3. Include references or citations from the metadata.
+    ### Query:
+    {query}
 
-    ## Provided Context:
-    {context}
-
-    ## Metadata for Reference:
+    ### Metadata: to create references and sources
     {metadata}
-
-    ## Query Details:
-    Original Query: {query}
-    Rephrased Query: {rephrased_query}
-
-    ## Output Format:
+    
+    ### Output Format:
     Answer:
     
     Follow-up Questions:
@@ -99,9 +95,13 @@ def generate_response_with_context(query: str, rephrased_query: str, metadata: s
     3.
 
     References:
+    1.
+    2.
     """
 
-    return llm.invoke(prompt)
+    # Pass the prompt to the LLM
+    response = llm.invoke(prompt)
+    return response
 
 
 def rephrase_query(query: str) -> str:
@@ -115,8 +115,7 @@ def rephrase_query(query: str) -> str:
         str: The rephrased query.
     """
     prompt = f"""
-    System: You are an expert in rephrasing queries.
-    Please rephrase the following query for better clarity:
+    System: You are an expert in rephrasing queries. Please rephrase the following query for better clarity:
 
     Query:
     {query}
@@ -124,7 +123,7 @@ def rephrase_query(query: str) -> str:
     return llm.invoke(prompt)
 
 
-def process_query(query: str) -> dict:
+def process_query(query: str, number_of_results: int = 3) -> dict:
     """
     Process the user query by performing semantic search and generating a response.
 
@@ -134,30 +133,48 @@ def process_query(query: str) -> dict:
     Returns:
         dict: A dictionary containing the answer, follow-up questions, and references.
     """
+    # Rephrase the query
+    number_of_results = 3
+    rephrased_query = rephrase_query(query)
+
+    # Perform semantic search to retrieve context
+    search_results = semantic_search(rephrased_query, top_k=number_of_results)
+    if search_results:
+        context = "\n".join(f"Context {idx}: {content}" for idx, (content, _) in enumerate(search_results))
+        metadata = "\n".join(f"Metadata {idx}: {meta}" for idx, (_, meta) in enumerate(search_results))
+    else:
+        context = "No relevant context found."
+        metadata = "No metadata available."
+
+    # Generate response
+    response = generate_response_with_context(rephrased_query, context, metadata)
+
+    # Parse the response
+    answer = response.split("Answer:")[1].split("Follow-up Questions:")[0].strip()
+
     try:
-        # Rephrase the query
-        rephrased_query = rephrase_query(query)
-
-        # Perform semantic search
-        search_results = semantic_search(rephrased_query)
-        if search_results:
-            context = "\n".join(f"Context {idx}: {content}" for idx, (content, _) in enumerate(search_results))
-            metadata = "\n".join(f"Metadata {idx}: {meta}" for idx, (_, meta) in enumerate(search_results))
-        else:
-            context = "No relevant context found."
-            metadata = "No metadata available."
-
-        # Generate response
-        response = generate_response_with_context(query, rephrased_query, metadata, context)
-
-        # Parse the response
-        answer = response.split("Answer:")[1].split("Follow-up Questions:")[0].strip()
-        follow_up_questions = response.split("Follow-up Questions:")[1].strip().split("\n")
+        follow_up_questions = response.split("Follow-up Questions:")[1].split("References:")[0].strip().split("\n")
         follow_up_questions = [q.strip() for q in follow_up_questions if q.strip()]
+    except IndexError:
+        follow_up_questions = []
 
-        return {"answer": answer, "follow_ups": follow_up_questions, "references": metadata}
+    try:
+        references = response.split("References:")[1].strip()
+        references = [ref.strip() for ref in references.split("\n") if ref.strip()]
+    except IndexError:
+        references = []
 
-    except ValueError as ve:
-        return {"answer": str(ve), "follow_ups": [], "references": ""}
-    except Exception as e:
-        return {"answer": "An error occurred while processing the query.", "follow_ups": [], "references": ""}
+    for idx, context in enumerate(search_results):
+        print(f"Context {idx}: {context}")
+    
+
+    print(f"Query: {rephrased_query}")
+    print(f"Answer: {answer}")
+    print(f"Follow-up Questions: {follow_up_questions}")
+    print(f"References: {references}")
+
+    return {"answer": answer, "follow_ups": follow_up_questions, 
+            "references": references,
+    } 
+
+    

@@ -61,7 +61,7 @@ async def scrape_page(session, url):
             markdown = "\n\n".join(body_content)
 
             result = {
-                "markdown": markdown,
+                "context": markdown,
                 "metadata": metadata
             }
 
