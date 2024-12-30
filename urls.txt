@@ -1,1 +1,5 @@
-https://towardsmachinelearning.org/region-proposal-network/
+https://arxiv.org/html/2409.12941v2
+https://arxiv.org/html/2409.12941v2
+https://arxiv.org/html/2409.10516v2
+https://arxiv.org/html/2409.11136v1
+https://arxiv.org/html/2408.08921v2

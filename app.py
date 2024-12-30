@@ -43,7 +43,7 @@ class ChatHistory(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return User.query.filter_by(id=user_id).first()
 
 # Helper functions
 def save_chat_history(question, response, processing_time, user_id):
@@ -142,6 +142,9 @@ def ask():
             return jsonify({'error': 'Question cannot be empty or null.'}), 400
         
         question = data['question'].strip().lower()
+        number_of_results = data.get('number_of_results', 5)
+        is_rephrased = data.get('is_rephrased', True)
+
         if not question:
             return jsonify({'error': 'Question cannot be empty or null.'}), 400
         
@@ -155,7 +158,8 @@ def ask():
             }
             return jsonify(response)
         
-        response = process_query(question)
+        response = process_query(question, number_of_results=number_of_results,
+                                 is_rephrased=is_rephrased)
         processing_time = time.time() - start_time
         save_chat_history(question, response, processing_time, current_user.id)
         return jsonify({**response, 'processing_time': processing_time, 'source': 'generated'})
@@ -189,4 +193,4 @@ def clear_chat_history():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Initialize database tables
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)

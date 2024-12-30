@@ -4,6 +4,11 @@ from langchain_openai import OpenAI
 from src.embedder import initialize_vector_store
 from src.stopword_filter import filter_stopwords
 
+EMBEDDING_TYPE = "sentence_transformers"  # Change to "openai" as needed
+document_collection = "my_documents"
+persist_directory = "./chromadb_persist"
+
+
 class OpenAITemperature:
     """Enum-like class for OpenAI temperature settings."""
     ZERO = 0.0
@@ -19,11 +24,10 @@ except Exception as e:
 
 # Load the persisted Chroma vector store
 try:
-    EMBEDDING_TYPE = "sentence_transformers"  # Change to "openai" as needed
     VECTOR_STORE = initialize_vector_store(
         embedding_type=EMBEDDING_TYPE,
-        collection_name="my_documents",
-        persist_directory="./chromadb_persist"
+        collection_name=document_collection,
+        persist_directory=persist_directory
     )
 except Exception as e:
     raise RuntimeError("Failed to initialize the vector store. Check embeddings and persistence configuration.") from e
@@ -72,11 +76,12 @@ def generate_response_with_context(query: str, retrieved_documents: str, metadat
     1. ONLY use information from the provided context documents
     2. If the answer cannot be fully derived from the context, state "Cannot provide a complete answer based on available context"
     3. Do not make assumptions or use external knowledge
-    5. Response should be in the form of a paragraph or a list of key points.
-    6. create References section with the sources used to answer the query.
+    5. Response should be in the form of a paragraph or a list of key points or table if required
+    6. create References section with the sources used to answer the query or generate follow-up questions, N/A if not applicable
+    7. Return the output answer in proper markdown format for easy reading and interpretation use headings and bullet points where necessary
 
     Use the following retrieved documents to answer the query or generate follow-up questions. If the answer is not in the documents, respond with "I don't know."
-    
+
     Retrieved Documents:
     {retrieved_documents}
 
@@ -123,7 +128,7 @@ def rephrase_query(query: str) -> str:
     return llm.invoke(prompt)
 
 
-def process_query(query: str, number_of_results: int = 3) -> dict:
+def process_query(query: str, number_of_results: int = 3, is_rephrased: bool = False):
     """
     Process the user query by performing semantic search and generating a response.
 
@@ -135,10 +140,11 @@ def process_query(query: str, number_of_results: int = 3) -> dict:
     """
     # Rephrase the query
     number_of_results = 3
-    rephrased_query = rephrase_query(query)
+    if is_rephrased:
+        query = rephrase_query(query)
 
     # Perform semantic search to retrieve context
-    search_results = semantic_search(rephrased_query, top_k=number_of_results)
+    search_results = semantic_search(query, top_k=number_of_results)
     if search_results:
         context = "\n".join(f"Context {idx}: {content}" for idx, (content, _) in enumerate(search_results))
         metadata = "\n".join(f"Metadata {idx}: {meta}" for idx, (_, meta) in enumerate(search_results))
@@ -147,7 +153,7 @@ def process_query(query: str, number_of_results: int = 3) -> dict:
         metadata = "No metadata available."
 
     # Generate response
-    response = generate_response_with_context(rephrased_query, context, metadata)
+    response = generate_response_with_context(query, context, metadata)
 
     # Parse the response
     answer = response.split("Answer:")[1].split("Follow-up Questions:")[0].strip()
@@ -168,7 +174,7 @@ def process_query(query: str, number_of_results: int = 3) -> dict:
         print(f"Context {idx}: {context}")
     
 
-    print(f"Query: {rephrased_query}")
+    print(f"Query: {query}")
     print(f"Answer: {answer}")
     print(f"Follow-up Questions: {follow_up_questions}")
     print(f"References: {references}")

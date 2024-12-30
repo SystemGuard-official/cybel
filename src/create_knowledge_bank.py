@@ -8,10 +8,12 @@ from src.embedder import initialize_vector_store
 
 # Initialize the embedding model
 embedding_type = "sentence_transformers"  # Change to "openai" as needed
+collection_name = "my_documents"
+persist_directory = "./chromadb_persist"
 vector_store = initialize_vector_store(
     embedding_type=embedding_type,
-    collection_name="my_documents",
-    persist_directory="./chromadb_persist"
+    collection_name=collection_name,
+    persist_directory=persist_directory
 )
 
 # Function to split large text into chunks

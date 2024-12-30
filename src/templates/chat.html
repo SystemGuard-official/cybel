@@ -93,7 +93,54 @@
             background: rgba(79, 70, 229, 0.15);
             transform: translateY(-1px);
         }
-        
+
+        .model-controls {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(203, 213, 225, 0.4);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .source-list {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(243, 244, 246, 0.5);
+            border-radius: 0.5rem;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0;
+            font-size: 0.75rem;
+            color: #6B7280;
+        }
+
+        .source-icon {
+            width: 1rem;
+            height: 1rem;
+            color: #6B7280;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #4F46E5;
+            color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 50;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -195,6 +242,46 @@
                 <!-- Messages will be added here -->
             </div>
 
+            <!-- Add this before the input area -->
+            <div class="border-t border-gray-100 bg-white">
+                <div class="max-w-3xl mx-auto px-6 py-4">
+                    <div class="model-controls">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-medium text-gray-700">Model Settings</h3>
+                            <button onclick="toggleSettings()" class="text-sm text-indigo-600 hover:text-indigo-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            </button>
+                        </div>
+                        <div id="settings-panel" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm text-gray-600">Number of Semantic Search</label>
+                                <select id="number-of-results" class="rounded-md border-gray-300 shadow-sm text-sm"
+                                    onchange="updateSettings('numberOfResults', this.value)">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm text-gray-600">Rephrase Query</label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" id="is-rephrased"
+                                        class="rounded border-gray-300 text-indigo-600 shadow-sm"
+                                        onchange="updateSettings('isRephrased', this.checked)">
+                                    <span class="ml-2 text-sm text-gray-600">Enable</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
             <!-- Input Area -->
             <div class="border-t border-gray-100 p-6 bg-white">
                 <div class="max-w-3xl mx-auto relative">
@@ -237,6 +324,61 @@
             };
             addMessageToUI(welcomeMessage);
         }
+
+        // Settings management
+        const DEFAULT_SETTINGS = {
+            numberOfResults: 3,
+            isRephrased: true
+        };
+
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('cybelSettings');
+            if (savedSettings) {
+                return JSON.parse(savedSettings);
+            }
+            // If no settings found, save and return defaults
+            localStorage.setItem('cybelSettings', JSON.stringify(DEFAULT_SETTINGS));
+            return DEFAULT_SETTINGS;
+        }
+
+        function updateSettings(key, value) {
+            const settings = loadSettings();
+            settings[key] = value;
+            localStorage.setItem('cybelSettings', JSON.stringify(settings));
+
+            // Show toast notification
+            showToast('Settings updated');
+        }
+
+        function applySettings() {
+            const settings = loadSettings();
+            document.getElementById('number-of-results').value = settings.numberOfResults;
+            document.getElementById('is-rephrased').checked = settings.isRephrased;
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // Trigger reflow to enable transition
+            toast.offsetHeight;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 2000);
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
 
         function addMessageToUI(message) {
             const messagesDiv = document.getElementById('chat-messages');
@@ -341,8 +483,11 @@
                 });
         }
 
+
         async function sendMessage() {
             const input = document.getElementById('message-input');
+            const numberOfResults = document.getElementById('number-of-results').value;
+            const isRephrased = document.getElementById('is-rephrased').checked;
             const message = input.value.trim();
             if (!message) return;
 
@@ -379,11 +524,17 @@
     `;
             document.getElementById('chat-messages').appendChild(loadingDiv);
 
+            const settings = loadSettings();
+
             try {
                 const response = await fetch('/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question: message })
+                    body: JSON.stringify({
+                        question: message,
+                        number_of_results: parseInt(settings.numberOfResults),
+                        is_rephrased: settings.isRephrased
+                    })
                 });
                 const data = await response.json();
 
@@ -471,10 +622,12 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            applySettings();
             addWelcomeMessage();
             updateChatHistory();
 
             // Set initial height of textarea
+            const messageInput = document.getElementById('message-input');
             messageInput.style.height = 'auto';
             messageInput.style.height = (messageInput.scrollHeight) + 'px';
         });
