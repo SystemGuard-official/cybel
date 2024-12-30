@@ -4,6 +4,10 @@ from langchain_openai import OpenAI
 from src.embedder import initialize_vector_store
 from src.stopword_filter import filter_stopwords
 
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
+
+
 EMBEDDING_TYPE = "sentence_transformers"  # Change to "openai" as needed
 document_collection = "my_documents"
 persist_directory = "./chromadb_persist"
@@ -18,7 +22,7 @@ class OpenAITemperature:
 
 # Initialize the embedding model and LLM
 try:
-    llm = OpenAI(temperature=OpenAITemperature.LOW,)
+    llm = OpenAI(temperature=OpenAITemperature.LOW)
 except Exception as e:
     print(f"Error initializing OpenAI model: {e}")
 

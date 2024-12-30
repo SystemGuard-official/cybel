@@ -4,8 +4,35 @@ import asyncio
 from bs4 import BeautifulSoup
 import json
 from pathlib import Path
+from collections import defaultdict
+import re
+import unicodedata
 
-# Function to scrape the webpage asynchronously
+# Clean and normalize text
+def clean_text(text):
+    return unicodedata.normalize("NFKD", text).strip()
+
+# Filter out irrelevant tags
+def is_relevant_tag(tag):
+    irrelevant_classes = ['nav', 'footer', 'header', 'sidebar']
+    return not any(cls in tag.get('class', '') for cls in irrelevant_classes)
+
+# Extract schema.org metadata
+def extract_schema_metadata(soup):
+    schema_metadata = {}
+    for meta in soup.find_all('script', type='application/ld+json'):
+        try:
+            metadata = json.loads(meta.string)
+            schema_metadata.update(metadata)
+        except Exception:
+            continue
+    return schema_metadata
+
+# Sanitize filenames for saving
+def sanitize_filename(url):
+    return re.sub(r'[^a-zA-Z0-9_-]', '_', url)
+
+# Async function to scrape a webpage
 async def scrape_page(session, url):
     try:
         async with session.get(url) as response:
@@ -17,47 +44,53 @@ async def scrape_page(session, url):
             soup = BeautifulSoup(html, 'html.parser')
 
             # Extract metadata
-            title = soup.find('title').text if soup.find('title') else ""
-            description = soup.find('meta', {'name': 'description'})
-            description = description['content'] if description else ""
-            language = soup.find('html')['lang'] if soup.find('html') and 'lang' in soup.find('html').attrs else ""
-            keywords = soup.find('meta', {'name': 'keywords'})
-            keywords = keywords['content'] if keywords else ""
+            title_tag = soup.find('title')
+            title = clean_text(title_tag.text) if title_tag else ""
+            # schema_metadata = extract_schema_metadata(soup)
 
             metadata = {
                 "title": title,
-                "url": url,
+                "source": url,
             }
 
-            # Extract markdown-like content
+            # Extract and organize content hierarchically
             body_content = []
+            hierarchy = defaultdict(list)
+            current_header = None
 
-            # Append header text with level
-            for header in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
-                level = header.name
-                body_content.append(f"{'#' * int(level[1])} {header.text.strip()}")
+            for element in soup.find_all(['h1', 'h2', 'h3', 'p']):
+                if element.name.startswith('h'):
+                    current_header = clean_text(element.text)
+                    hierarchy[current_header] = []
+                elif element.name == 'p' and current_header:
+                    hierarchy[current_header].append(clean_text(element.text))
 
-            # Append paragraph text
-            for paragraph in soup.find_all('p'):
-                body_content.append(paragraph.text.strip())
+            # Convert hierarchy to markdown
+            for header, paragraphs in hierarchy.items():
+                body_content.append(f"# {header}")
+                body_content.extend(paragraphs)
 
-            # convert table in some readable format 
+            # Extract tables
             for table in soup.find_all('table'):
-                rows = table.find_all('tr')
-                for row in rows:
-                    cols = row.find_all('td')
-                    cols = [ele.text.strip() for ele in cols]
-                    body_content.append(' | '.join(cols))
-            
+                table_rows = []
+                headers = [clean_text(header.text) for header in table.find_all('th')]
+                if headers:
+                    table_rows.append(' | '.join(headers))
+                    table_rows.append(' | '.join(['---'] * len(headers)))
+                for row in table.find_all('tr'):
+                    cols = [clean_text(td.text) for td in row.find_all('td')]
+                    if cols:
+                        table_rows.append(' | '.join(cols))
+                if table_rows:
+                    body_content.append('\n'.join(table_rows))
 
-            # Append image alt and src | not needed for now
-            # for img in soup.find_all('img'):
-            #     alt = img.get('alt', "")
-            #     src = img.get('src', "")
-            #     if alt or src:
-            #         body_content.append(f"![{alt}]({src})")
+            # Extract links
+            for link in soup.find_all('a', href=True):
+                link_text = clean_text(link.text)
+                link_url = link['href']
+                body_content.append(f"[{link_text}]({link_url})")
 
-            # Join the body content with newlines
+            # Combine content
             markdown = "\n\n".join(body_content)
 
             result = {
@@ -71,7 +104,7 @@ async def scrape_page(session, url):
         print(f"Error scraping {url}: {e}")
         return None
 
-# Function to process all URLs from a file
+# Async function to process all URLs from a file
 async def process_urls(input_file, output_dir):
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -96,16 +129,10 @@ async def process_urls(input_file, output_dir):
                 with open(filename, 'w') as f:
                     json.dump(data, f, indent=4)
 
-# Helper function to sanitize filenames
-import re
-def sanitize_filename(url):
-    return re.sub(r'[^a-zA-Z0-9_-]', '_', url)
-
 # Entry point
 if __name__ == "__main__":
     input_file = "urls.txt"  # File containing URLs separated by newlines
     output_dir = "src/input_data"  # Directory to save JSON files
     os.makedirs(output_dir, exist_ok=True)
-
 
     asyncio.run(process_urls(input_file, output_dir))
