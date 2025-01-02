@@ -83,6 +83,7 @@ def generate_response_with_context(query: str, retrieved_documents: str, metadat
     5. Response should be in the form of a paragraph or a list of key points or table if required
     6. create References section with the sources used to answer the query or generate follow-up questions, N/A if not applicable
     7. Return the output answer in proper markdown format for easy reading and interpretation use headings and bullet points where necessary
+    8. Answer should be in markdown format
 
     Use the following retrieved documents to answer the query or generate follow-up questions. If the answer is not in the documents, respond with "I don't know."
 
@@ -143,7 +144,6 @@ def process_query(query: str, number_of_results: int = 3, is_rephrased: bool = F
         dict: A dictionary containing the answer, follow-up questions, and references.
     """
     # Rephrase the query
-    number_of_results = 3
     if is_rephrased:
         query = rephrase_query(query)
 

@@ -10,6 +10,7 @@ from src.embedder import initialize_vector_store
 embedding_type = "sentence_transformers"  # Change to "openai" as needed
 collection_name = "my_documents"
 persist_directory = "./chromadb_persist"
+
 vector_store = initialize_vector_store(
     embedding_type=embedding_type,
     collection_name=collection_name,
@@ -30,6 +31,7 @@ def store_file_in_chromadb_txt_file(data_dir: str, filenames: list, chunk_size: 
 
     all_documents = []
     for filename in filenames:
+        print(f"Storing file: {filename}")
         file_path = os.path.join(data_dir, filename)
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")

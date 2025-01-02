@@ -29,19 +29,22 @@ def initialize_vector_store(embedding_type, collection_name, persist_directory):
     Returns:
         Chroma: The initialized vector store.
     """
+    # models_names = ["all-MiniLM-L6-v2", "all-MPNet-base-v2", "sentence-t5-xxl",
+    #                 "paraphrase-multilingual-MiniLM-L12-v2", ]
+
     if embedding_type == "sentence_transformers":
-        model_name = "all-MiniLM-L6-v2"  # Example model name
-        embeddings = SentenceTransformerEmbeddings(model_name)
+        model_name = "all-MPNet-base-v2"
+        embedding_function = SentenceTransformerEmbeddings(model_name)
     elif embedding_type == "openai":
         model_name = "text-embedding-3-small"
-        embeddings = OpenAIEmbeddings(model=model_name)
+        embedding_function = OpenAIEmbeddings(model=model_name)
     else:
         raise ValueError("Invalid embedding type. Choose 'sentence_transformers' or 'openai'.")
 
     # Initialize Chroma vector store
     vector_store = Chroma(
         collection_name=collection_name,
-        embedding_function=embeddings,
+        embedding_function=embedding_function,
         persist_directory=persist_directory
     )
     return vector_store

@@ -85,10 +85,10 @@ async def scrape_page(session, url):
                     body_content.append('\n'.join(table_rows))
 
             # Extract links
-            for link in soup.find_all('a', href=True):
-                link_text = clean_text(link.text)
-                link_url = link['href']
-                body_content.append(f"[{link_text}]({link_url})")
+            # for link in soup.find_all('a', href=True):
+            #     link_text = clean_text(link.text)
+            #     link_url = link['href']
+            #     body_content.append(f"[{link_text}]({link_url})")
 
             # Combine content
             markdown = "\n\n".join(body_content)
