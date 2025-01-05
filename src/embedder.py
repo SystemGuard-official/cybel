@@ -44,7 +44,7 @@ def initialize_vector_store(embedding_type, collection_name, persist_directory):
     # Initialize Chroma vector store
     vector_store = Chroma(
         collection_name=collection_name,
-        embedding_function=embedding_function,
+        embedding_function=embedding_function, # type: ignore
         persist_directory=persist_directory
     )
     return vector_store

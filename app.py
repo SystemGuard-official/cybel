@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
 import time
-from src.query_chromadb import process_query
+from src.query_chromadb import process_query, get_random_document_chunks
 from src.create_knowledge_bank import store_file_in_chromadb_txt_file
 
 # Configurations
@@ -109,6 +109,16 @@ def home():
     if current_user.is_authenticated:
         return redirect(url_for('chat'))
     return render_template('index.html')
+
+@app.route('/random_questions')
+@login_required
+def random_questions():
+    try:
+        questions = get_random_document_chunks()
+        return jsonify(questions)
+    except Exception as e:
+        app.logger.error(f"Error fetching random questions: {e}")
+        return jsonify({'error': 'Unable to fetch random questions.'}), 500
 
 @app.route('/chat')
 @login_required

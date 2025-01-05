@@ -309,18 +309,26 @@
             return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        function addWelcomeMessage() {
+        async function getFollowUpQuestions() {
+            try {
+            const response = await fetch('/random_questions');
+            const questions = await response.json();
+            return questions;
+            } catch (error) {
+            console.error('Error fetching follow-up questions:', error);
+            return [];
+            }
+        }
+
+        async function addWelcomeMessage() {
+            const followUps = await getFollowUpQuestions();
             const welcomeMessage = {
-                role: 'assistant',
-                content: 'Hello! I\'m Cybel, your AI assistant. How can I help you today?',
-                follow_ups: [
-                    'What is your name?',
-                    'Tell me about yourself',
-                    'What can you do?'
-                ],
-                timestamp: Date.now(),
-                processing_time: 0,
-                source: 'system'
+            role: 'assistant',
+            content: 'Hello! I\'m Cybel, your AI assistant. How can I help you today?',
+            follow_ups: followUps,
+            timestamp: Date.now(),
+            processing_time: 0,
+            source: 'system'
             };
             addMessageToUI(welcomeMessage);
         }
