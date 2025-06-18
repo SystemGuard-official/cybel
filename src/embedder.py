@@ -37,7 +37,7 @@ def initialize_vector_store(embedding_type, collection_name, persist_directory):
         embedding_function = SentenceTransformerEmbeddings(model_name)
     elif embedding_type == "openai":
         model_name = "text-embedding-3-small"
-        embedding_function = OpenAIEmbeddings(model=model_name)
+        embedding_function = 0(model=model_name)
     else:
         raise ValueError("Invalid embedding type. Choose 'sentence_transformers' or 'openai'.")
 

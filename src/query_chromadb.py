@@ -1,17 +1,13 @@
 import os
 import random
-from langchain_openai import OpenAI
 from src.embedder import initialize_vector_store
 from src.stopword_filter import filter_stopwords
-
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
+from src.llm.llm_manager import LLMManager
 
 
 EMBEDDING_TYPE = "sentence_transformers"  # Change to "openai" as needed
 document_collection = "my_documents"
 persist_directory = "./chromadb_persist"
-
 
 class OpenAITemperature:
     """Enum-like class for OpenAI temperature settings."""
@@ -20,11 +16,7 @@ class OpenAITemperature:
     MEDIUM = 0.7
     HIGH = 1.0
 
-# Initialize the embedding model and LLM
-try:
-    llm = OpenAI(temperature=OpenAITemperature.LOW)
-except Exception as e:
-    print(f"Error initializing OpenAI model: {e}")
+manager = LLMManager(provider="groq", model_name="llama-3.3-70b-versatile")
 
 # Load the persisted Chroma vector store
 try:
@@ -110,7 +102,7 @@ def generate_response_with_context(query: str, retrieved_documents: str, metadat
     """
 
     # Pass the prompt to the LLM
-    response = llm.invoke(prompt)
+    response = manager.generate_response(system_prompt="", user_prompt=prompt)
     return response
 
 
@@ -130,7 +122,7 @@ def rephrase_query(query: str) -> str:
     Query:
     {query}
     """
-    return llm.invoke(prompt)
+    return manager.generate_response(system_prompt="", user_prompt=prompt)
 
 
 def process_query(query: str, number_of_results: int = 3, is_rephrased: bool = False):
@@ -253,7 +245,7 @@ def get_random_document_chunks():
     3. Question 3:
     """
 
-    initial_questions = llm.invoke(prompt)
+    initial_questions = manager.generate_response(system_prompt="", user_prompt=prompt)
     # print(f"Random Chunks: {random_chunks}")
     # print(f"Generated Questions: {initial_questions}")
 
