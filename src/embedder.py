@@ -6,7 +6,7 @@ from langchain_chroma import Chroma
 # Custom embedding class for SentenceTransformers
 class SentenceTransformerEmbeddings:
     def __init__(self, model_name):
-        self.model = SentenceTransformer(model_name)
+        self.model = SentenceTransformer(model_name, device="cpu")
 
     def embed_documents(self, texts):
         """Embed a list of documents and return as lists."""
@@ -37,7 +37,7 @@ def initialize_vector_store(embedding_type, collection_name, persist_directory):
         embedding_function = SentenceTransformerEmbeddings(model_name)
     elif embedding_type == "openai":
         model_name = "text-embedding-3-small"
-        embedding_function = 0(model=model_name)
+        embedding_function = OpenAIEmbeddings(model=model_name)
     else:
         raise ValueError("Invalid embedding type. Choose 'sentence_transformers' or 'openai'.")
 
